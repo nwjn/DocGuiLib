@@ -13,18 +13,21 @@ export default class SliderElement extends BaseElement {
     constructor(settings = [ 0, 10 ], defaultValue = 1, x, y, width, height, outline = false) {
         super(x, y, width, height, settings, null, "Slider", outline)
 
-        this.settings = settings
-        this.defaultValue = ElementUtils.miniMax(this.settings[0], this.settings[1], defaultValue)
+        this.min = settings[0]
+        this.max = settings[1]
+        this.diff = this.max - this.min
+
         // Used to check whether the previously saved value was over/under the min/max
-        this.rawDefaultValue = defaultValue
+        this.defaultValue = ElementUtils.miniMax(this.min, this.max, defaultValue)
+        this.wasClamped = defaultValue !== this.defaultValue
 
-        this.initialPercent = ElementUtils.miniMax(0, 1, this.defaultValue / this.settings[1])
+        // Opposite of lerping
+        this.initialPercent = ElementUtils.miniMax(0, 1, (this.defaultValue - this.min) / this.diff)
         this.initialX = this.initialPercent !== 0 ? new RelativeConstraint(ElementUtils.miniMax(0, 0.75, this.initialPercent)) : this.x
-        this.isDragging = false
-        this.offset = 0
-
+        
         // Check for decimal pointers and if they should be there add them
-        if (this.settings[0] % 1 !== 0) this.defaultValue = parseFloat(this.defaultValue).toFixed(2)
+        this.isDecimalSlider = this.min % 1 || this.max % 1 || this.defaultValue % 1
+        this.isDragging = false
     }
 
     _create(colorScheme = {}) {
@@ -32,9 +35,7 @@ export default class SliderElement extends BaseElement {
 
         // If the previously saved default value was under/over the min/max
         // we call the [onMouseRelease] event so it gets adjusted to the new value
-        if (this.rawDefaultValue < this.settings[0] || this.rawDefaultValue > this.settings[1]) {
-            this._triggerEvent(this.onMouseRelease, this.defaultValue)
-        }
+        if (this.wasClamped) this._triggerEvent(this.onMouseRelease, this.defaultValue)
 
         this.backgroundBox = new UIRoundedRectangle(this._getSchemeValue("background", "roundness"))
             .setX(this.x)
@@ -48,31 +49,31 @@ export default class SliderElement extends BaseElement {
             .setX((1).pixels())
             .setY(new CenterConstraint())
             .setWidth((98).percent())
-            .setHeight((10).pixels())
+            .setHeight((10).pixels()) // TODO: Change off pixels
             .setColor(this._getColor("bar", "color"))
             .enableEffect(new OutlineEffect(this._getColor("bar", "outlineColor"), this._getSchemeValue("bar", "outlineSize")))
             .setChildOf(this.backgroundBox)
 
         this.compBox = new UIRoundedRectangle(this._getSchemeValue("completionbar", "roundness"))
             .setWidth(new RelativeConstraint(this.initialPercent))
-            .setHeight((100).percent())
+            .setHeight((100).percent()) // TODO: Delete if its this by default
             .setColor(this._getColor("completionbar", "color"))
             .enableEffect(new OutlineEffect(this._getColor("completionbar", "outlineColor"), this._getSchemeValue("completionbar", "outlineSize")))
             .setChildOf(this.sliderBar)
-        
+            
         this.sliderBox = new UIRoundedRectangle(this._getSchemeValue("sliderbox", "roundness"))
             .setX(this.initialX)
             .setY(new CenterConstraint())
-            .setWidth(new AspectConstraint(1))
-            .setHeight((15).pixels())
+            .setWidth(new AspectConstraint(1)) // Before was new AspectConstraint(1) which was just (height * (1))
+            .setHeight((15).pixels()) // TODO: Change off pixels
             .setColor(this._getColor("sliderbox", "color"))
             .enableEffect(new OutlineEffect(this._getColor("sliderbox", "outlineColor"), this._getSchemeValue("sliderbox", "outlineSize")))
             .setChildOf(this.sliderBar)
-        
+            
         this.sliderValue = new UIText(this.defaultValue)
             .setX(new CenterConstraint())
             .setY(new CenterConstraint())
-            .setTextScale((this._getSchemeValue("text", "scale").pixels()))
+            .setTextScale((this._getSchemeValue("text", "scale")).pixels())
             .setColor(this._getColor("text", "color"))
             .setChildOf(this.sliderBox)
 
@@ -97,7 +98,7 @@ export default class SliderElement extends BaseElement {
                         this._getSchemeValue("mouseEnterAnimation", "time"),
                         new ConstantColorConstraint(this._getColor("mouseEnterAnimation", "color")),
                         0
-                        )
+                    )
                 })
             })
             .onMouseLeave((comp) => {
@@ -107,7 +108,7 @@ export default class SliderElement extends BaseElement {
                         this._getSchemeValue("mouseLeaveAnimation", "time"),
                         new ConstantColorConstraint(this._getColor("mouseLeaveAnimation", "color")),
                         0
-                        )
+                    )
                 })
             })
 
@@ -115,40 +116,34 @@ export default class SliderElement extends BaseElement {
     }
 
     _onMouseClick(component, event) {
-        if (this._triggerEvent(this.onMouseClick, component, event) === 1) return
-
-        this.isDragging = true
-        this.offset = 1
+        if (this._triggerEvent(this.onMouseClick, component, event) !== 1) this.isDragging = true
     }
 
     _onMouseRelease() {
-        if (this._triggerEvent(this.onMouseRelease, this.getValue()) === 1) return
-
-        this.isDragging = false
-        this.offset = 0
+        if (this._triggerEvent(this.onMouseRelease, this.getValue()) !== 1) this.isDragging = false
     }
 
     _onMouseDrag(component, x, y, button) {
         if (!this.isDragging) return
 
         // Cancel the custom event for this component
-        if (this._triggerEvent(this.onMouseDrag, x, y, button, component, this.getValue()) === 1 || !this.offset) return
+        if (this._triggerEvent(this.onMouseDrag, x, y, button, component, this.getValue()) === 1) return
 
-        const clamped = (x + component.getLeft()) - this.offset
-        const roundNumber = ElementUtils.miniMax(this.sliderBar.getLeft(), this.sliderBar.getRight(), clamped)
-        const percent = ElementUtils.miniMax(0, 1, (roundNumber - this.sliderBar.getLeft()) / this.sliderBar.getWidth())
+        const [barLeft, barRight, barWidth] = [this.sliderBar.getLeft(), this.sliderBar.getRight(), this.sliderBar.getWidth()]
+        const clamped = ~~Client.getMouseX() - 1
+        const roundNumber = ElementUtils.miniMax(barLeft, barRight, clamped)
+        const percent = ElementUtils.miniMax(0, 1, (roundNumber - barLeft) / barWidth)
 
         // Fix [sliderBox] going off bound
         const sliderBoxHalfWidth = this.sliderBox.getWidth() / 2
-        const roundNumberBox = ElementUtils.miniMax(this.sliderBar.getLeft() + sliderBoxHalfWidth, this.sliderBar.getRight() - sliderBoxHalfWidth, clamped)
-        const sliderBoxPercent = ElementUtils.miniMax(0, 1, (roundNumberBox - sliderBoxHalfWidth - this.sliderBar.getLeft()) / this.sliderBar.getWidth())
+        const roundNumberBox = ElementUtils.miniMax(barLeft + sliderBoxHalfWidth, barRight - sliderBoxHalfWidth, clamped)
+        const sliderBoxPercent = ElementUtils.miniMax(0, 1, (roundNumberBox - sliderBoxHalfWidth - barLeft) / barWidth)
+
+        // Lerp the bounds and percentage to get the value
+        const value = this.diff * percent + this.min
 
         // Makes the rounded number into an actual slider value
-        this.value = this.settings[0] % 1 !== 0
-            ? parseFloat(((this.settings[1] - this.settings[0]) * ((percent * 100) / 100) + this.settings[0])).toFixed(2)
-            : parseInt((this.settings[1] - this.settings[0]) * ((percent * 100) / 100) + this.settings[0])
-
-        // TODO: make this more precise so people can have values whenever the max is higher than 2 digits
+        this.value = this.isDecimalSlider ? parseFloat(value.toFixed(2)) : parseInt(value)
         this.sliderValue.setText(this.value)
         this.sliderBox.setX(new RelativeConstraint(sliderBoxPercent))
         this.compBox.setWidth(new RelativeConstraint(percent))
