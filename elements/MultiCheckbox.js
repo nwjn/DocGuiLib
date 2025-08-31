@@ -109,18 +109,17 @@ export default class MultiCheckboxElement extends BaseElement {
 
         this.dropDownScrollable
             // Avoid these events going to the parent component
-            .onMouseClick((comp, event) => event.stopPropagation())
-            .onMouseScroll((comp, event) => event.stopPropagation())
+            .onMouseClick((_, event) => event.stopPropagation())
+            .onMouseScroll((_, event) => event.stopPropagation())
 
         return this.bgBox
     }
 
-    _onMouseClick(comp, event) {
+    _onMouseClick(_, event) {
         event.stopPropagation()
 
-        if (this.hidden) return this._unhideDropDown()
-
-        this._hideDropDown()
+        if (this.hidden) this._unhideDropDown()
+        else this._hideDropDown()
     }
 
     _hideDropDown() {

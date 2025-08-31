@@ -7,12 +7,7 @@ export default class BaseElement {
         this.width = (width).percent()
         this.height = (height).percent()
 
-        this.cleanValues = {
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        }
+        this.cleanValues = { x, y, width, height }
         this.value = value
         this.string = null
         this.colorScheme = colorScheme
@@ -153,7 +148,7 @@ export default class BaseElement {
      * @returns {Boolean|null}
      */
     getToggle() {
-        if (!(this.value instanceof Boolean)) return null
+        if (typeof this.value !== "boolean") return null
 
         return this.value
     }
@@ -247,7 +242,7 @@ export default class BaseElement {
     }
 
     /**
-     * - Force sets the size values to the given ones (dosent automatically assign them to percent or pixels)
+     * - Force sets the size values to the given ones (doesn't automatically assign them to percent or pixels)
      * @param {Number} width 
      * @param {Number} height 
      * @returns this for method chaining
@@ -260,7 +255,7 @@ export default class BaseElement {
     }
 
     /**
-     * - Force sets the position values to the given ones (dosent automatically assign them to percent or pixels)
+     * - Force sets the position values to the given ones (doesn't automatically assign them to percent or pixels)
      * @param {Number} x 
      * @param {Number} y 
      * @returns this for method chaining
@@ -347,7 +342,7 @@ export default class BaseElement {
         // Trigger the event handler (the function) set by the user
         handler[1](...args)
 
-        // If [shouldCancel] is enabled we [return 1] so the custom event handler dosen't get triggered
+        // If [shouldCancel] is enabled we [return 1] so the custom event handler doesn't get triggered
         if (handler[0]) return 1
     }
 }

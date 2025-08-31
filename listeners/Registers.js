@@ -45,54 +45,78 @@ export default class HandleRegisters {
             this.window.draw()
             
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.DRAW)?.forEach(it => it(mx, my, pticks))
+            const events = this.customEvents.get(CustomEventsENUM.DRAW)
+            if (events) 
+                for (let fn of events)
+                    fn(mx, my, pticks)
         }))
 
         this.eventsList.add(this.ctGui.registerClicked((mx, my, button) => {
             this.window.mouseClick(mx, my, button)
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.MOUSECLICK)?.forEach(it => it(mx, my, button))
+            const events = this.customEvents.get(CustomEventsENUM.MOUSECLICK)
+            if (events) 
+                for (let fn of events)
+                    fn(mx, my, button)
         }))
 
         this.eventsList.add(this.ctGui.registerMouseReleased((mx, my, button) => {
             this.window.mouseRelease()
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.MOUSERELEASE)?.forEach(it => it(mx, my, button))
+            const events = this.customEvents.get(CustomEventsENUM.MOUSERELEASE)
+            if (events) 
+                for (let fn of events)
+                    fn(mx, my, button)
         }))
 
         this.eventsList.add(this.ctGui.registerScrolled((mx, my, scroll) => {
             this.window.mouseScroll(scroll)
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.MOUSESCROLL)?.forEach(it => it(mx, my, scroll))
+            const events = this.customEvents.get(CustomEventsENUM.MOUSESCROLL)
+            if (events) 
+                for (let fn of events)
+                    fn(mx, my, scroll)
         }))
 
         this.eventsList.add(this.ctGui.registerMouseDragged((mx, my, button) => {
             this.window.mouseDrag(mx, my, button)
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.MOUSEDRAG)?.forEach(it => it(mx, my, button))
+            const events = this.customEvents.get(CustomEventsENUM.MOUSEDRAG)
+            if (events) 
+                for (let fn of events)
+                    fn(mx, my, button)
         }))
 
         this.eventsList.add(this.ctGui.registerClosed((gui) => {
             this._stop()
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.CLOSE)?.forEach(it => it(gui))
+            const events = this.customEvents.get(CustomEventsENUM.CLOSE)
+            if (events) 
+                for (let fn of events)
+                    fn(gui)
         }))
 
         this.eventsList.add(this.ctGui.registerKeyTyped((keyChar, keyCode) => {
             this.window.keyType(keyChar, keyCode)
 
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.KEYTYPE)?.forEach(it => it(keyChar, keyCode))
+            const events = this.customEvents.get(CustomEventsENUM.KEYTYPE)
+            if (events) 
+                for (let fn of events)
+                    fn(keyChar, keyCode)
         }))
 
         this.eventsList.add(this.ctGui.registerOpened((gui) => {
             // Trigger the saved [customEvents]
-            this.customEvents.get(CustomEventsENUM.OPEN)?.forEach(it => it(gui))
+            const events = this.customEvents.get(CustomEventsENUM.OPEN)
+            if (events) 
+                for (let fn of events)
+                    fn(gui)
         }))
     }
 
@@ -119,7 +143,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime this [Gui] is drawn
+     * - Triggers the given function every time this [Gui] is drawn
      * - Gives [mouseX, mouseY, partialTicks] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -131,7 +155,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime there's a mouse click while this [Gui] is opened
+     * - Triggers the given function every time there's a mouse click while this [Gui] is opened
      * - Gives [mouseX, mouseY, mouseButton] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -143,7 +167,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime there's a mouse release while this [Gui] is opened
+     * - Triggers the given function every time there's a mouse release while this [Gui] is opened
      * - Gives [mouseX, mouseY, mouseButton] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -155,7 +179,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime there's a mouse scroll while this [Gui] is opened
+     * - Triggers the given function every time there's a mouse scroll while this [Gui] is opened
      * - Gives [mouseX, mouseY, scrollDirection] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -167,7 +191,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime there's a mouse drag while this [Gui] is opened
+     * - Triggers the given function every time there's a mouse drag while this [Gui] is opened
      * - Gives [mouseX, mouseY, mouseButton] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -179,7 +203,7 @@ export default class HandleRegisters {
     }
 
     /**
-     * - Triggers the given function everytime there's a key type while this [Gui] is opened
+     * - Triggers the given function every time there's a key type while this [Gui] is opened
      * - Gives [keyChar, keyCode] as params for the function
      * @param {Function} fn 
      * @returns this for method chaining
@@ -192,11 +216,14 @@ export default class HandleRegisters {
 
     /**
      * - Internal use
-     * - Unregisters and deletes the list
+     * - Unregister and deletes the list
      */
     _stop() {
         if (this.isCustom) return
-        this.eventsList.forEach(event => event.unregister())
+
+        for (let event of this.eventsList)
+            event.unregister()
+
         this.eventsList.clear()
     }
 }

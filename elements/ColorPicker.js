@@ -11,50 +11,50 @@ const hueColors = new Array(50).fill(null).map((_, idx) => new Color(Color.HSBto
 
 function UICustomGradient(color1) {
     return new JavaAdapter(GradientComponent, {
-      draw() {
-        // Got too lazy to figure this out so
-        // now that's here
-        if (this.getStartColor().getRGB() === -1 && this.getEndColor().getRGB() === -1) {
-            this.setStartColor(color1)
-            this.setEndColor(new Color(0, 0, 0))
-        }
+        draw() {
+            // Got too lazy to figure this out so
+            // now that's here
+            if (this.getStartColor().getRGB() === -1 && this.getEndColor().getRGB() === -1) {
+                this.setStartColor(color1)
+                this.setEndColor(new Color(0, 0, 0))
+            }
 
-        UGraphics.enableBlend()
-        UGraphics.disableAlpha()
-        UGraphics.tryBlendFuncSeparate(770, 771, 1, 0)
-        UGraphics.shadeModel(7425)
+            UGraphics.enableBlend()
+            UGraphics.disableAlpha()
+            UGraphics.tryBlendFuncSeparate(770, 771, 1, 0)
+            UGraphics.shadeModel(7425)
 
-        const tessellator = UGraphics.getFromTessellator()
-        const matrixStack = UMatrixStack.UNIT
+            const tessellator = UGraphics.getFromTessellator()
+            const matrixStack = UMatrixStack.UNIT
 
-        const [ x1, y1, x2, y2 ] = [ this.getLeft(), this.getTop(), this.getRight(), this.getBottom() ]
-        const [ topRight, topLeft, bottomLeft, bottomRight ] = [
-            this.getStartColor(), new Color(1, 1, 1),
-            this.getEndColor(), this.getEndColor()
-        ]
+            const [ x1, y1, x2, y2 ] = [ this.getLeft(), this.getTop(), this.getRight(), this.getBottom() ]
+            const [ topRight, topLeft, bottomLeft, bottomRight ] = [
+                this.getStartColor(), new Color(1, 1, 1),
+                this.getEndColor(), this.getEndColor()
+            ]
 
-        tessellator.beginWithDefaultShader(UGraphics.DrawMode.QUADS, UGraphics.CommonVertexFormats.POSITION_COLOR)
-        tessellator.pos(matrixStack, x1, y2, 0.0).color(bottomLeft).endVertex()
-        tessellator.pos(matrixStack, x2, y2, 0.0).color(bottomRight).endVertex()
-        tessellator.pos(matrixStack, x1, y1, 0.0).color(topLeft).endVertex()
-        tessellator.pos(matrixStack, x2, y1, 0.0).color(topRight).endVertex()
-        tessellator.pos(matrixStack, x2, y1, 0.0).color(topRight).endVertex()
-        tessellator.pos(matrixStack, x1, y1, 0.0).color(topLeft).endVertex()
-        tessellator.pos(matrixStack, x2, y2, 0.0).color(bottomRight).endVertex()
-        tessellator.pos(matrixStack, x1, y2, 0.0).color(bottomLeft).endVertex()
-        tessellator.drawDirect()
+            tessellator.beginWithDefaultShader(UGraphics.DrawMode.QUADS, UGraphics.CommonVertexFormats.POSITION_COLOR)
+            tessellator.pos(matrixStack, x1, y2, 0.0).color(bottomLeft).endVertex()
+            tessellator.pos(matrixStack, x2, y2, 0.0).color(bottomRight).endVertex()
+            tessellator.pos(matrixStack, x1, y1, 0.0).color(topLeft).endVertex()
+            tessellator.pos(matrixStack, x2, y1, 0.0).color(topRight).endVertex()
+            tessellator.pos(matrixStack, x2, y1, 0.0).color(topRight).endVertex()
+            tessellator.pos(matrixStack, x1, y1, 0.0).color(topLeft).endVertex()
+            tessellator.pos(matrixStack, x2, y2, 0.0).color(bottomRight).endVertex()
+            tessellator.pos(matrixStack, x1, y2, 0.0).color(bottomLeft).endVertex()
+            tessellator.drawDirect()
 
-        UGraphics.shadeModel(7424)
-        UGraphics.disableBlend()
-        UGraphics.enableAlpha()
-      },
+            UGraphics.shadeModel(7424)
+            UGraphics.disableBlend()
+            UGraphics.enableAlpha()
+        },
     })
 }
 
 function UICustomBlock() {
     return new JavaAdapter(UIBlock, {
         draw() {
-            for (let idx = 0; idx < hueColors.length; idx++) {
+            for (let idx in hueColors) {
                 let color = hueColors[idx]
                 let yPos = this.getTop() + ((idx * this.getHeight()) / 50)
 
@@ -92,7 +92,7 @@ export default class ColorPickerElement extends BaseElement {
 
     /**
      * - Gets the current RGB value in text input and returns it
-     * @returns {[Number, Number, Numer] | null}
+     * @returns {[Number, Number, Number] | null}
      */
     getRGB() {
         return this.currentRGB
@@ -234,16 +234,15 @@ export default class ColorPickerElement extends BaseElement {
         // Events
         // Arrow text events
         this.arrowText.onMouseClick((comp) => {
-            if (this.hidden) return this.unhideColorPicker(comp)
-
-            this.hideColorPicker(comp)
+            if (this.hidden) this.unhideColorPicker(comp)
+            else this.hideColorPicker(comp)
         })
 
         // Textinput (hex input)
         this.textInput.onKeyTypeEvent((text) => {
             if (text.length < 6 || text.length > 8) return
 
-            let colors = ElementUtils.hexToRgb(text)
+            const colors = ElementUtils.hexToRgb(text)
 
             if (!colors) return this.currentRGB = null
 
@@ -336,9 +335,13 @@ export default class ColorPickerElement extends BaseElement {
 
             // Detect whether the position clicked is in the boundaries of the slider
             // this is to ensure that the user can have a good user experience while changing alpha
-            if (!(event.absoluteX >= left && event.absoluteX <= right && event.absoluteY >= top && event.absoluteY <= bottom)) return
-
-            this.alphaSlider._onMouseClick(comp, event)
+            if (
+                event.absoluteX >= left && 
+                event.absoluteX <= right && 
+                event.absoluteY >= top && 
+                event.absoluteY <= bottom
+            )
+                this.alphaSlider._onMouseClick(comp, event)
         })
 
         // Hide color picker by default
@@ -354,9 +357,7 @@ export default class ColorPickerElement extends BaseElement {
         this._triggerKeyEvent()
         this._recolorRgbaBox()
 
-        if (internal) return
-
-        this._setTextHexInput()
+        if (!internal) this._setTextHexInput()
     }
 
     /**
@@ -369,29 +370,27 @@ export default class ColorPickerElement extends BaseElement {
         if (!this._shouldResizeParent) {
             this.hidden = true
             this.bgBox.hide(true)
-
-            return
         }
-
-        animate(this.generalBg, (animation) => {
-            animation.setHeightAnimation(
-                Animations[this._getSchemeValue("heightAnimationOut", "type")],
-                this._getSchemeValue("heightAnimationOut", "time"),
-                (this.parentHeight).pixels()
-                )
-            animation.onComplete(() => {
-                this.generalBg.parent.setHeight((this.parentHeight).pixels())
-                this.textInput.bgBox.setY(new CenterConstraint())
-                comp.setY(new CenterConstraint())
-                    
-                this.hidden = true
-                this.bgBox.hide(true)
+        else 
+            animate(this.generalBg, (animation) => {
+                animation.setHeightAnimation(
+                    Animations[this._getSchemeValue("heightAnimationOut", "type")],
+                    this._getSchemeValue("heightAnimationOut", "time"),
+                    (this.parentHeight).pixels()
+                    )
+                animation.onComplete(() => {
+                    this.generalBg.parent.setHeight((this.parentHeight).pixels())
+                    this.textInput.bgBox.setY(new CenterConstraint())
+                    comp.setY(new CenterConstraint())
+                        
+                    this.hidden = true
+                    this.bgBox.hide(true)
+                })
             })
-        })
     }
     
     /**
-     * - Unhides the Arrow Text component and re-sizes the parent (this is going to be optional soon)
+     * - Unhide the Arrow Text component and re-sizes the parent (this is going to be optional soon)
      * @param {UIText} comp The text (arrow) component
      */
     unhideColorPicker(comp) {
@@ -456,7 +455,7 @@ export default class ColorPickerElement extends BaseElement {
     }
 
     setValue(value) {
-        if (!Array.isArray(value) || value.some((it) => it < 0 || it > 255)) value = [0, 0, 0, 255]
+        if (!Array.isArray(value) || value.some(it => it & -256 === 0)) value = [0, 0, 0, 255]
         this.value = value
 
         const color = new Color(this.value[0] / 255, this.value[1] / 255, this.value[2] / 255, (this.value?.[3] ?? 255) / 255)

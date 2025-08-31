@@ -5,7 +5,10 @@ let keyEvents = []
 
 const onKeyEvent = (fn) => keyEvents.push(fn)
 
-register("guiKey", (char, keycode, gui, event) => keyEvents.forEach(it => it(char, keycode, gui, event)))
+register("guiKey", (char, keycode, gui, event) => {
+    for (let fn of keyEvents) 
+        fn(char, keycode, gui, event)
+})
 
 export default class KeybindElement extends BaseElement {
     constructor(keycode, x, y, width, height) {
@@ -35,7 +38,7 @@ export default class KeybindElement extends BaseElement {
 
         // Events
         this.bgbox
-            .onMouseClick((comp, event) => {
+            .onMouseClick((_, event) => {
                 if (this.enabled) {
                     event.stopPropagation()
                     this.value = -100 + event.mouseButton

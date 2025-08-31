@@ -11,6 +11,8 @@ export default class Button1Element extends BaseElement {
     _create(colorScheme = {}) {
         if (!this.colorScheme) this.colorScheme = colorScheme
 
+        const centerText = this._getSchemeValue("text", "centered")
+
         // Invis box to hold everything
         this.backgroundBox = new UIRoundedRectangle(this._getSchemeValue("background", "roundness"))
             .setX(this.x)
@@ -21,7 +23,7 @@ export default class Button1Element extends BaseElement {
             .enableEffect(new OutlineEffect(this._getColor("background", "outlineColor"), this._getSchemeValue("background", "outlineSize")))
 
         // If [centered] text is disabled we should draw the lines
-        if (!this._getSchemeValue("text", "centered")) {
+        if (!centerText) {
             // Vertical line
             this.line1 = new UIRoundedRectangle(this._getSchemeValue("lines", "roundness"))
                 .setX((3).percent())
@@ -41,9 +43,9 @@ export default class Button1Element extends BaseElement {
                 .setChildOf(this.backgroundBox)
         }
 
-        this.text = new UIWrappedText(`${this._getSchemeValue("text", "format")}${this.getString()}`, true, null, this._getSchemeValue("text", "centered"))
-            .setX(this._getSchemeValue("text", "centered") ? new CenterConstraint() : (9).percent())
-            .setY(this._getSchemeValue("text", "centered") ? new CenterConstraint() : (30).percent())
+        this.text = new UIWrappedText(`${this._getSchemeValue("text", "format")}${this.getString()}`, true, null, centerText)
+            .setX(centerText ? new CenterConstraint() : (9).percent())
+            .setY(centerText ? new CenterConstraint() : (30).percent())
             .setWidth((100).percent())
             .setTextScale((this._getSchemeValue("text", "scale")).pixels())
             .setColor(this._getColor("text", "color"))

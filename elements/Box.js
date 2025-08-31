@@ -48,12 +48,12 @@ export default class BoxElement extends BaseElement {
             .setHeight((80).percent())
             .setChildOf(this.mainBlock)
         
-        this.buttons?.forEach(button => {
-            // Creates a button
-            button
-                ._create(this.colorScheme)
-                .setChildOf(this.scrollableContainer)
-        })
+        if (this.buttons)
+            for (let btn of this.buttons)
+                // Creates a button
+                btn
+                    ._create(this.colorScheme)
+                    .setChildOf(this.scrollableContainer)
         
         return this.mainBlock
     }
@@ -62,14 +62,11 @@ export default class BoxElement extends BaseElement {
         return this.mainBlock
     }
 
-    addButton(button) {
-        if (button instanceof Array) {
-            button.forEach(btn => this.buttons.add(btn))
-
-            return this
-        }
-        
-        this.buttons.add(button)
+    addButton(buttons) {
+        if (Array.isArray(buttons))
+            for (let btn of buttons)
+                this.buttons.add(btn)
+        else this.buttons.add(buttons)
 
         return this
     }

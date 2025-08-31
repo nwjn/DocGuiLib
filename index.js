@@ -45,7 +45,7 @@ const selection = new SelectionElement(["a", "test", "a part 2"], 1, 1, 58, 80, 
 
 const dividerA = new DividerElement("SOMETHING ABOUT THIS ASKDHJBAKSJBDJKA", 1, 65, 100, 5)
 
-const switchcomp = new SwitchElement(false, 1, 75, 25, 8)
+const switchComp = new SwitchElement(false, 1, 75, 25, 8)
 //     .onMouseClickEvent((comp) => ChatLib.chat(`component clicked ${comp}`))
 //     .onMouseEnterEvent((comp) => ChatLib.chat(`A: ${comp}`))
 //     .onMouseLeaveEvent((comp) => ChatLib.chat(`B: ${comp}`))
@@ -64,6 +64,6 @@ const element = new BoxElement()
 element
     .setPosition(10, 10)
     .setText("testing block")
-    .addButton([btn1, btn2, textInput, pickColor, slider, selection, dividerA, switchcomp])
+    .addButton([btn1, btn2, textInput, pickColor, slider, selection, dividerA, switchComp])
 
 gui.draw(element)

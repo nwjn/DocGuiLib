@@ -17,9 +17,8 @@ export default class DropDownElement extends BaseElement {
         if (!this.colorScheme) this.colorScheme = colorScheme
         if (elementType) this.elementType = elementType
 
-        if (this.defaultValue < 0 || this.defaultValue > this.maxOptLength) {
+        if (this.defaultValue < 0 || this.defaultValue > this.maxOptLength)
             this._triggerEvent(this.onMouseClick, this.value)
-        }
 
         this.bgBox = new UIRoundedRectangle(this._getSchemeValue("background", "roundness"))
             .setX(this.x)
@@ -40,7 +39,7 @@ export default class DropDownElement extends BaseElement {
 
         this.currentSelectionText = new UIWrappedText(this.options[this.value], true, null, true, true, 10)
             .setX((1).pixels())
-            .setY((new CenterConstraint()))
+            .setY(new CenterConstraint())
             .setWidth((100).percent())
             .setColor(this._getColor("selectiontext", "color"))
             .setTextScale((this._getSchemeValue("selectiontext", "scale")).pixels())
@@ -83,7 +82,7 @@ export default class DropDownElement extends BaseElement {
                 .setColor(this._getColor(bgScheme, "color"))
                 .enableEffect(new OutlineEffect(this._getColor(bgScheme, "outlineColor"), this._getSchemeValue(bgScheme, "outlineSize")))
                 .setChildOf(this.dropDownScrollable)
-                .onMouseClick((comp, event) => {
+                .onMouseClick((_, event) => {
                     if (event.mouseButton !== 0) return
 
                     this.value = idx
@@ -110,18 +109,17 @@ export default class DropDownElement extends BaseElement {
 
         this.dropDownScrollable
             // Avoid these events going to the parent component
-            .onMouseClick((comp, event) => event.stopPropagation())
-            .onMouseScroll((comp, event) => event.stopPropagation())
+            .onMouseClick((_, event) => event.stopPropagation())
+            .onMouseScroll((_, event) => event.stopPropagation())
 
         return this.bgBox
     }
 
-    _onMouseClick(comp, event) {
+    _onMouseClick(_, event) {
         event.stopPropagation()
 
-        if (this.hidden) return this._unhideDropDown()
-
-        this._hideDropDown()
+        if (this.hidden) this._unhideDropDown()
+        else this._hideDropDown()
     }
 
     _hideDropDown() {
@@ -143,8 +141,7 @@ export default class DropDownElement extends BaseElement {
     }
 
     setValue(value) {
-        if (isNaN(value)) value = 0
-        if (value < 0 || value > this.options.length) value = 0
+        if (!(value in this.options)) value = 0
         this.value = value
 
         this.currentSelectionText.setText(this.options[this.getValue()])

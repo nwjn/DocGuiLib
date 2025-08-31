@@ -43,9 +43,11 @@ export default class HandleGui {
      * @returns this for method chaining
      */
     setCommand(name, aliases = []) {
-        register("command", () => {
+        const cmdTrig = register("command", () => {
             this.ctGui.open()
-        }).setName(name).setAliases(...aliases)
+        }).setName(name)
+        
+        if (aliases?.length) cmdTrig.setAliases(...aliases)
 
         return this
     }
@@ -75,9 +77,10 @@ export default class HandleGui {
     draw(components, isComponent = true) {
         if (!isComponent) return this._drawNormal(components)
 
-        if (!(components instanceof Array)) return components._create(this.getColorScheme()).setChildOf(this.window)
-
-        components.forEach(element => element._create(this.getColorScheme()).setChildOf(this.window))
+        if (Array.isArray(components))
+            for (let elem of components)
+                elem._create(this.getColorScheme()).setChildOf(this.window)
+        else components._create(this.getColorScheme()).setChildOf(this.window)
     }
 
     /**
@@ -86,9 +89,10 @@ export default class HandleGui {
      * @returns 
      */
     _drawNormal(components) {
-        if (!(components instanceof Array)) return components.setChildOf(this.window)
-
-        components.forEach(element => element.setChildOf(this.window))
+        if (Array.isArray(components))
+            for (let elem of components)
+                elem.setChildOf(this.window)
+        else components.setChildOf(this.window)
     }
 
     /**

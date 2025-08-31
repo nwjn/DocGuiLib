@@ -36,7 +36,7 @@ export default class SelectionElement extends BaseElement {
     }
 
     /**
-     * - Hides/Unhides the arrows depending on the current index
+     * - Hides/Unhide the arrows depending on the current index
      * @param {Number} index 
      * @returns 
      */
