@@ -65,7 +65,7 @@ export default class MultiCheckboxElement extends BaseElement {
             .setHeight((98).percent())
             .setChildOf(this.dropDownBg)
 
-        this.options.forEach((obj, idx) => {
+        this.options.forEach((obj) => {
             const optionBg = new UIRoundedRectangle(5)
                 .setX((0).pixels())
                 .setY(new CramSiblingConstraint(5))
@@ -142,10 +142,8 @@ export default class MultiCheckboxElement extends BaseElement {
 
     setValue(configName, value) {
         if (typeof value !== "boolean") value = false
-        if (!(configName in this.checkboxes)) return
 
-        this.checkboxes[configName].setValue(value)
-
-        return this.checkboxes[configName].getValue()
+        if (configName in this.checkboxes)
+            return this.checkboxes[configName].setValue(value)
     }
 }

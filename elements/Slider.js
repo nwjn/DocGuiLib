@@ -13,19 +13,23 @@ export default class SliderElement extends BaseElement {
     constructor(settings = [ 0, 10 ], defaultValue = 1, x, y, width, height, outline = false) {
         super(x, y, width, height, settings, null, "Slider", outline)
 
-        this.settings = settings
-        this.defaultValue = ElementUtils.miniMax(this.settings[0], this.settings[1], defaultValue)
+        this.min = settings[0]
+        this.max = settings[1]
+        this.diff = this.max - this.min
+
+        this.settings = settings.slice()
+        this.defaultValue = ElementUtils.miniMax(this.min, this.max, defaultValue)
+
         // Used to check whether the previously saved value was over/under the min/max
-        this.rawDefaultValue = defaultValue
+        this.outOfBounds = defaultValue !== this.defaultValue
 
         const side = 0.31
-        this.initialPercent = (this.defaultValue - this.settings[0]) / (this.settings[1] - this.settings[0])
+        this.initialPercent = ElementUtils.miniMax(0, 1, (this.defaultValue - this.min) / this.diff)
         this.initialX = ElementUtils.miniMax(0, 1 - side, this.initialPercent - side / 2)
-        this.isDragging = false
-        this.offset = 0
 
         // Check for decimal pointers and if they should be there add them
-        if (this.settings[0] % 1 !== 0) this.defaultValue = parseFloat(this.defaultValue).toFixed(2)
+        this.isDecimalSlider = this.min % 1 || this.max % 1 || this.defaultValue % 1
+        this.isDragging = false
     }
 
     _create(colorScheme = {}) {
@@ -33,9 +37,8 @@ export default class SliderElement extends BaseElement {
 
         // If the previously saved default value was under/over the min/max
         // we call the [onMouseRelease] event so it gets adjusted to the new value
-        if (this.rawDefaultValue < this.settings[0] || this.rawDefaultValue > this.settings[1]) {
+        if (this.outOfBounds) 
             this._triggerEvent(this.onMouseRelease, this.defaultValue)
-        }
 
         this.backgroundBox = new UIRoundedRectangle(this._getSchemeValue("background", "roundness"))
             .setX(this.x)
@@ -116,52 +119,52 @@ export default class SliderElement extends BaseElement {
     }
 
     _onMouseClick(component, event) {
-        if (this._triggerEvent(this.onMouseClick, component, event) === 1) return
-
-        this.isDragging = true
-        this.offset = 1
+        if (this._triggerEvent(this.onMouseClick, component, event) !== 1) 
+            this.isDragging = true
     }
 
     _onMouseRelease() {
-        if (this._triggerEvent(this.onMouseRelease, this.getValue()) === 1) return
-
-        this.isDragging = false
-        this.offset = 0
+        if (this._triggerEvent(this.onMouseRelease, this.getValue()) !== 1)
+            this.isDragging = false
     }
 
     _onMouseDrag(component, x, y, button) {
         if (!this.isDragging) return
 
         // Cancel the custom event for this component
-        if (this._triggerEvent(this.onMouseDrag, x, y, button, component, this.getValue()) === 1 || !this.offset) return
+        if (this._triggerEvent(this.onMouseDrag, x, y, button, component, this.getValue()) === 1) return
 
-        const clamped = (x + component.getLeft()) - this.offset
-        const roundNumber = ElementUtils.miniMax(this.sliderBar.getLeft(), this.sliderBar.getRight(), clamped)
-        const percent = ElementUtils.miniMax(0, 1, (roundNumber - this.sliderBar.getLeft()) / this.sliderBar.getWidth())
+        const barLeft = this.sliderBar.getLeft()
+        const barRight = this.sliderBar.getRight()
+        const barWidth = this.sliderBar.getWidth()
+
+        const clamp = ~~Client.getMouseX() - 1
+        const roundNumber = ElementUtils.miniMax(barLeft, barRight, clamp)
+        const percent = ElementUtils.miniMax(0, 1, (roundNumber - barLeft) / barWidth)
 
         // Fix [sliderBox] going off bound
         const sliderBoxHalfWidth = this.sliderBox.getWidth() / 2
-        const roundNumberBox = ElementUtils.miniMax(this.sliderBar.getLeft() + sliderBoxHalfWidth, this.sliderBar.getRight() - sliderBoxHalfWidth, clamped)
-        const sliderBoxPercent = ElementUtils.miniMax(0, 1, (roundNumberBox - sliderBoxHalfWidth - this.sliderBar.getLeft()) / this.sliderBar.getWidth())
+        const roundNumberBox = ElementUtils.miniMax(barLeft + sliderBoxHalfWidth, barRight - sliderBoxHalfWidth, clamp)
+        const sliderBoxPercent = ElementUtils.miniMax(0, 1, (roundNumberBox - sliderBoxHalfWidth - barLeft) / barWidth)
+        
+        // Lerp the bounds and percentage to get the value
+        const value = this.diff * percent + this.min
 
         // Makes the rounded number into an actual slider value
-        this.value = this.settings[0] % 1 !== 0
-            ? parseFloat(((this.settings[1] - this.settings[0]) * ((percent * 100) / 100) + this.settings[0])).toFixed(2)
-            : parseInt((this.settings[1] - this.settings[0]) * ((percent * 100) / 100) + this.settings[0])
+        this.value = this.isDecimalSlider ? parseFloat(value.toFixed(2)) : parseInt(value)
 
-        // TODO: make this more precise so people can have values whenever the max is higher than 2 digits
         this.sliderValue.setText(this.value)
         this.sliderBox.setX(new RelativeConstraint(sliderBoxPercent))
         this.compBox.setWidth(new RelativeConstraint(percent))
     }
 
     setValue(value) {
-        if (isNaN(value)) value = this.settings[0]
-        if (value < this.settings[0] || value > this.settings[1]) value = this.settings[0]
+        if (isNaN(value)) value = this.min
+        if (value < this.min || value > this.max) value = this.min
         this.value = value
 
         const side = this.sliderBox.getWidth() / this.sliderBar.getWidth()
-        const percent = (value - this.settings[0]) / (this.settings[1] - this.settings[0])
+        const percent = (value - this.min) / this.diff
         const x = ElementUtils.miniMax(0, 1 - side, percent - side / 2)
 
         this.sliderBox.setX(new RelativeConstraint(x))

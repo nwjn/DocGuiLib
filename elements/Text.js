@@ -27,14 +27,14 @@ export default class TextElement extends BaseElement {
         this.hover.hide()
 
         this.text
-            .onMouseEnter((comp, event) => {
+            .onMouseEnter((comp) => {
                 if (!this.string) return
 
                 this.hover.setText(this.string)
                 this.hover.unhide(true)
                 comp.setText("")
             })
-            .onMouseLeave((comp, event) => {
+            .onMouseLeave((comp) => {
                 if (!this.string) return
 
                 this.hover.hide()
