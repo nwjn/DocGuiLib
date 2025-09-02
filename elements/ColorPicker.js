@@ -54,9 +54,10 @@ function UICustomGradient(color1) {
 function UICustomBlock() {
     return new JavaAdapter(UIBlock, {
         draw() {
-            for (let idx in hueColors) {
+            const seg = this.getHeight() / 50
+            for (let idx = 0; idx < hueColors.length; idx++) {
                 let color = hueColors[idx]
-                let yPos = this.getTop() + ((idx * this.getHeight()) / 50)
+                let yPos = this.getTop() + (idx * seg)
 
                 Renderer.drawRect(color.getRGB(), this.getLeft(), yPos, 10, 2)
             }
