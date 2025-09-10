@@ -1,3 +1,5 @@
+import { isLegacy } from "../core/Compatibility"
+
 let i = 0
 const CustomEventsENUM = {
     OPEN: i++,
@@ -92,7 +94,7 @@ export default class HandleRegisters {
         }))
 
         this.eventsList.add(this.ctGui.registerClosed((gui) => {
-            this._stop()
+            if (isLegacy) this._stop()
 
             // Trigger the saved [customEvents]
             const events = this.customEvents.get(CustomEventsENUM.CLOSE)
@@ -102,7 +104,9 @@ export default class HandleRegisters {
         }))
 
         this.eventsList.add(this.ctGui.registerKeyTyped((keyChar, keyCode) => {
-            this.window.keyType(keyChar, keyCode)
+            // I hope this works for everyone lol
+            const char = keyCode >= 32 && keyCode <= 126 ? keyChar : String.fromCharCode(0)
+            this.window.keyType(char, keyCode)
 
             // Trigger the saved [customEvents]
             const events = this.customEvents.get(CustomEventsENUM.KEYTYPE)

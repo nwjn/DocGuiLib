@@ -1,5 +1,7 @@
-const GuiScreen = net.minecraft.client.gui.GuiScreen
-const MouseListener = com.chattriggers.ctjs.minecraft.listeners.MouseListener.INSTANCE
+import { isLegacy } from "./Compatibility"
+
+const GuiScreen = isLegacy && net.minecraft.client.gui.GuiScreen
+const MouseListener = isLegacy && com.chattriggers.ctjs.minecraft.listeners.MouseListener.INSTANCE
 
 /**
  * * Custom Gui "wrapper" without using chattriggers
@@ -7,6 +9,8 @@ const MouseListener = com.chattriggers.ctjs.minecraft.listeners.MouseListener.IN
  */
 export class CustomGui {
     constructor() {
+        if (!isLegacy) return
+
         this.guiScreen = new JavaAdapter(GuiScreen, {
             /* drawScreen */func_73863_a: (mx, my, pticks) => this.drawScreen(mx, my, pticks),
             /* mouseClicked */func_73864_a: (mx, my, mbtn) => this.mouseClicked(mx, my, mbtn),

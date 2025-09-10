@@ -5,9 +5,9 @@ let keyEvents = []
 
 const onKeyEvent = (fn) => keyEvents.push(fn)
 
-register("guiKey", (char, keycode, gui, event) => {
+register("guiKey", (name, keycode, gui, event) => {
     for (let fn of keyEvents) 
-        fn(char, keycode, gui, event)
+        fn(name, keycode, gui, event)
 })
 
 export default class KeybindElement extends BaseElement {
@@ -15,6 +15,7 @@ export default class KeybindElement extends BaseElement {
         super(x, y, width, height, keycode, null, "Keybind")
 
         this.enabled = false
+        this.keyName = "NONE"
     }
 
     _create(colorScheme) {
@@ -61,18 +62,20 @@ export default class KeybindElement extends BaseElement {
         // Handle it via custom event so we can actually cancel the event
         // since #stopPropagation does not work with key type events
         // and what we need is to cancel [ESC] from closing the main [GUI]
-        onKeyEvent((char, keycode, _, event) => {
+        onKeyEvent((name, keycode, _, event) => {
             if (!this.enabled) return
 
             if (keycode === Keyboard.KEY_ESCAPE) {
                 cancel(event)
                 keycode = 0
+                name = "NONE"
             }
 
-            if (this._triggerEvent(this.onKeyType, keycode, char) === 1) return
+            if (this._triggerEvent(this.onKeyType, keycode, name) === 1) return
 
             this.enabled = false
             this.value = keycode
+            this.keyName = name
             this.keyText.setText(this._getKeyName())
         })
 
@@ -87,9 +90,10 @@ export default class KeybindElement extends BaseElement {
     _getKeyName() {
         if (this.getValue() < 0) return `M${Math.abs(-100 % this.getValue())}`
 
-        const keyName = Keyboard.getKeyName(this.getValue())
+        // const keyName = Keyboard.getKeyName(this.getValue())
+        const keyName = this.keyName?.toUpperCase()
 
-        return keyName.length <= 3 ? `Key: ${keyName}` : keyName
+        return keyName?.length <= 3 ? `Key: ${keyName}` : keyName
     }
 
     setValue(value) {

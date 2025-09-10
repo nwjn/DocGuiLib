@@ -1,16 +1,18 @@
 import { Animations, CenterConstraint, ConstantColorConstraint, FillConstraint, OutlineEffect, UIRoundedRectangle, UIText, UITextInput, animate } from "../../Elementa"
+import { isLegacy } from "../core/Compatibility"
 import BaseElement from "./Base"
 
 let ticksDown = 0
 let keybindEvents = []
+const BACKSPACE = isLegacy ? Keyboard.KEY_BACK : Keyboard.KEY_BACKSPACE
 
 register("tick", () => {
-    if (!World.isLoaded() || !Keyboard.isKeyDown(Keyboard.KEY_BACK)) return ticksDown = 0
+    if (!World.isLoaded() || !Keyboard.isKeyDown(BACKSPACE)) return ticksDown = 0
 
     ticksDown++
     if (ticksDown <= 10) return
 
-    keybindEvents.forEach(it => it("", Keyboard.KEY_BACK))
+    keybindEvents.forEach(it => it("", BACKSPACE))
 })
 
 export default class TextInputElement extends BaseElement {
