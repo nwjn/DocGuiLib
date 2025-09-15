@@ -47,80 +47,56 @@ export default class HandleRegisters {
             this.window.draw()
             
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.DRAW)
-            if (events) 
-                for (let fn of events)
-                    fn(mx, my, pticks)
+            this.customEvents.get(CustomEventsENUM.DRAW).forEach(fn => fn(mx, my, pticks))
         }))
 
         this.eventsList.add(this.ctGui.registerClicked((mx, my, button) => {
             this.window.mouseClick(mx, my, button)
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.MOUSECLICK)
-            if (events) 
-                for (let fn of events)
-                    fn(mx, my, button)
+            this.customEvents.get(CustomEventsENUM.MOUSECLICK).forEach(fn => fn(mx, my, button))
         }))
 
         this.eventsList.add(this.ctGui.registerMouseReleased((mx, my, button) => {
             this.window.mouseRelease()
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.MOUSERELEASE)
-            if (events) 
-                for (let fn of events)
-                    fn(mx, my, button)
+            this.customEvents.get(CustomEventsENUM.MOUSERELEASE).forEach(fn => fn(mx, my, button))
         }))
 
         this.eventsList.add(this.ctGui.registerScrolled((mx, my, scroll) => {
             this.window.mouseScroll(scroll)
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.MOUSESCROLL)
-            if (events) 
-                for (let fn of events)
-                    fn(mx, my, scroll)
+            this.customEvents.get(CustomEventsENUM.MOUSESCROLL).forEach(fn => fn(mx, my, scroll))
         }))
 
         this.eventsList.add(this.ctGui.registerMouseDragged((mx, my, button) => {
             this.window.mouseDrag(mx, my, button)
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.MOUSEDRAG)
-            if (events) 
-                for (let fn of events)
-                    fn(mx, my, button)
+            this.customEvents.get(CustomEventsENUM.MOUSEDRAG).forEach(fn => fn(mx, my, button))
         }))
 
         this.eventsList.add(this.ctGui.registerClosed((gui) => {
             if (isLegacy) this._stop()
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.CLOSE)
-            if (events) 
-                for (let fn of events)
-                    fn(gui)
+            this.customEvents.get(CustomEventsENUM.CLOSE).forEach(fn => fn(gui))
         }))
 
         this.eventsList.add(this.ctGui.registerKeyTyped((keyChar, keyCode) => {
             // I hope this works for everyone lol
-            const char = keyCode >= 32 && keyCode <= 126 ? keyChar : String.fromCharCode(0)
-            this.window.keyType(char, keyCode)
+            keyChar = !isLegacy && (keyCode < 32 || keyCode > 126) ? String.fromCharCode(0) : keyChar
+            this.window.keyType(keyChar, keyCode)
 
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.KEYTYPE)
-            if (events) 
-                for (let fn of events)
-                    fn(keyChar, keyCode)
+            this.customEvents.get(CustomEventsENUM.KEYTYPE).forEach(fn => fn(keyChar, keyCode))
         }))
 
         this.eventsList.add(this.ctGui.registerOpened((gui) => {
             // Trigger the saved [customEvents]
-            const events = this.customEvents.get(CustomEventsENUM.OPEN)
-            if (events) 
-                for (let fn of events)
-                    fn(gui)
+            this.customEvents.get(CustomEventsENUM.OPEN).forEach(fn => fn(gui))
         }))
     }
 
